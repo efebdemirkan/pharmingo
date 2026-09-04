@@ -1,0 +1,46 @@
+name: Install Pharmingo v22
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.deploy/pharmingo-v22.part*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild Pharmingo v22 payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .deploy/pharmingo-v22.part00
+          test -f .deploy/pharmingo-v22.part01
+          test -f .deploy/pharmingo-v22.part02
+          test -f .deploy/pharmingo-v22.part03
+          cat .deploy/pharmingo-v22.part00 .deploy/pharmingo-v22.part01 .deploy/pharmingo-v22.part02 .deploy/pharmingo-v22.part03 > /tmp/pharmingo.b64
+          base64 -d /tmp/pharmingo.b64 > /tmp/pharmingo.zip
+          rm -rf /tmp/pharmingo-build
+          mkdir -p /tmp/pharmingo-build
+          unzip -q /tmp/pharmingo.zip -d /tmp/pharmingo-build
+          rm -rf .bootstrap .bootstrap2 bundle
+          cp -a /tmp/pharmingo-build/. .
+          rm -rf .deploy
+      - name: Commit full source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Install full Pharmingo v22 source"
+            git push
+          fi
