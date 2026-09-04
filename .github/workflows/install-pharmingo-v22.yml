@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - '.deploy/pharmingo-v22.part*'
+      - '.deploy/READY'
   workflow_dispatch:
 
 permissions:
@@ -19,11 +19,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -f .deploy/pharmingo-v22.part00
-          test -f .deploy/pharmingo-v22.part01
-          test -f .deploy/pharmingo-v22.part02
-          test -f .deploy/pharmingo-v22.part03
-          cat .deploy/pharmingo-v22.part00 .deploy/pharmingo-v22.part01 .deploy/pharmingo-v22.part02 .deploy/pharmingo-v22.part03 > /tmp/pharmingo.b64
+          test -f .deploy/READY
+          ls .deploy/pharmingo-v22.part* >/dev/null
+          cat $(find .deploy -maxdepth 1 -type f -name 'pharmingo-v22.part*' | sort) > /tmp/pharmingo.b64
           base64 -d /tmp/pharmingo.b64 > /tmp/pharmingo.zip
           rm -rf /tmp/pharmingo-build
           mkdir -p /tmp/pharmingo-build
