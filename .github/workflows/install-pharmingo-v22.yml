@@ -1,35 +1,52 @@
-name: Install Pharmingo v22
+name: Finalize Pharmingo v22
 
 on:
   push:
     branches: [main]
     paths:
-      - '.deploy/READY'
+      - '.asset/READY'
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  install:
+  finalize:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Rebuild Pharmingo v22 payload
+      - name: Rebuild full Pharmingo source
         shell: bash
         run: |
           set -euo pipefail
-          test -f .deploy/READY
-          ls .deploy/pharmingo-v22.part* >/dev/null
-          cat $(find .deploy -maxdepth 1 -type f -name 'pharmingo-v22.part*' | sort) > /tmp/pharmingo.b64
-          base64 -d /tmp/pharmingo.b64 > /tmp/pharmingo.zip
-          rm -rf /tmp/pharmingo-build
-          mkdir -p /tmp/pharmingo-build
-          unzip -q /tmp/pharmingo.zip -d /tmp/pharmingo-build
-          rm -rf .bootstrap .bootstrap2 bundle
-          cp -a /tmp/pharmingo-build/. .
-          rm -rf .deploy
-      - name: Commit full source
+          test -f .asset/READY
+          cat bundle/app-js.*.b64 | base64 -d | gzip -dc > app.js
+          cat bundle/styles-css.*.b64 | base64 -d | gzip -dc > styles.css
+          mkdir -p assets
+          cat .asset/pharmingo-snake.* | base64 -d > assets/pharmingo-snake.webp
+          sed -i 's#assets/pharmingo-snake.png#assets/pharmingo-snake.webp#g' index.html
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = Path('manifest.webmanifest')
+          data = json.loads(manifest.read_text())
+          data['icons'] = [{
+              'src': 'assets/pharmingo-snake.webp',
+              'sizes': 'any',
+              'type': 'image/webp',
+              'purpose': 'any maskable'
+          }]
+          manifest.write_text(json.dumps(data, ensure_ascii=False, indent=2))
+          sw = Path('service-worker.js')
+          text = sw.read_text()
+          text = text.replace(',"./icons/icon-192.webp","./icons/icon-512.webp"', '')
+          sw.write_text(text)
+          PY
+          node --check app.js
+          test -s styles.css
+          test -s assets/pharmingo-snake.webp
+          rm -rf .bootstrap .bootstrap2 bundle .deploy .asset icons
+      - name: Commit final Pharmingo source
         shell: bash
         run: |
           set -euo pipefail
@@ -39,6 +56,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Install full Pharmingo v22 source"
+            git commit -m "Finalize Pharmingo v22 source"
             git push
           fi
