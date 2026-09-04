@@ -1,0 +1,1 @@
+Pharmingo v22 deployment bootstrap files. Temporary; GitHub Actions will reconstruct the v22 source and remove this directory.
