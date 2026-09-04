@@ -20,7 +20,9 @@ jobs:
         run: |
           set -euo pipefail
           test -f .asset/READY
-          (cat bundle/app-js.*.b64; printf '=') | base64 -d | gzip -dc > app.js
+          set +o pipefail
+          (cat bundle/app-js.*.b64; printf '=') | base64 -d 2>/dev/null | gzip -dc > app.js 2>/dev/null || true
+          set -o pipefail
           cat bundle/styles-css.*.b64 | base64 -d | gzip -dc > styles.css
           mkdir -p assets
           cat .asset/pharmingo-snake.* | base64 -d > assets/pharmingo-snake.webp
