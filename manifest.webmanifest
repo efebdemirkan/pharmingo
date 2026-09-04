@@ -1,0 +1,23 @@
+{
+  "name": "Pharmingo – Eczacılık Öğrenme",
+  "short_name": "Pharmingo",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f6faf8",
+  "theme_color": "#176b4f",
+  "description": "Eczacılık için günlük öğrenme, vaka, tekrar ve sınav uygulaması.",
+  "icons": [
+    {
+      "src": "icons/icon-192.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ]
+}
