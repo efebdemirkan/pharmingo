@@ -20,7 +20,7 @@ jobs:
         run: |
           set -euo pipefail
           test -f .asset/READY
-          cat bundle/app-js.*.b64 | base64 -d | gzip -dc > app.js
+          (cat bundle/app-js.*.b64; printf '=') | base64 -d | gzip -dc > app.js
           cat bundle/styles-css.*.b64 | base64 -d | gzip -dc > styles.css
           mkdir -p assets
           cat .asset/pharmingo-snake.* | base64 -d > assets/pharmingo-snake.webp
@@ -45,7 +45,7 @@ jobs:
           node --check app.js
           test -s styles.css
           test -s assets/pharmingo-snake.webp
-          rm -rf .bootstrap .bootstrap2 bundle .deploy .asset icons
+          rm -rf .bootstrap .bootstrap2 bundle .deploy .asset .final icons
       - name: Commit final Pharmingo source
         shell: bash
         run: |
