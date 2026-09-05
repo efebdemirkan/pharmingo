@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - '.release/v119.part33.b64'
+      - '.release/v119.rem08.b64'
 
 permissions:
   contents: write
@@ -18,8 +18,18 @@ jobs:
           fetch-depth: 0
       - name: Rebuild v119 archive
         run: |
-          cat .release/v119.part*.b64 > /tmp/pharmingo-v119.b64
+          {
+            cat .release/v119.part00.b64
+            printf 'S'; cat .release/v119.part01.b64
+            printf 'J'; cat .release/v119.part02.b64
+            printf 'z'; cat .release/v119.part03.b64
+            printf 'G'; cat .release/v119.part04.b64
+            printf 'u'; cat .release/v119.part05.b64
+            cat .release/v119.part06.fixed.b64
+            for f in .release/v119.rem*.b64; do cat "$f"; done
+          } > /tmp/pharmingo-v119.b64
           base64 -d /tmp/pharmingo-v119.b64 > /tmp/pharmingo-v119.tar.xz
+          echo '32850337dce47161f5a32ef7452da5c19eeffe78836e90f1ff8704e720cb6ada  /tmp/pharmingo-v119.tar.xz' | sha256sum -c -
           mkdir -p /tmp/pharmingo-v119
           tar -xJf /tmp/pharmingo-v119.tar.xz -C /tmp/pharmingo-v119
       - name: Install v119 files
