@@ -1,0 +1,46 @@
+name: Finalize Pharmingo v119
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.release/v119.part33.b64'
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Rebuild v119 archive
+        run: |
+          cat .release/v119.part*.b64 > /tmp/pharmingo-v119.b64
+          base64 -d /tmp/pharmingo-v119.b64 > /tmp/pharmingo-v119.tar.xz
+          mkdir -p /tmp/pharmingo-v119
+          tar -xJf /tmp/pharmingo-v119.tar.xz -C /tmp/pharmingo-v119
+      - name: Install v119 files
+        run: |
+          cp -a /tmp/pharmingo-v119/. .
+      - name: Validate
+        run: |
+          node --check app.js
+          test -f index.html
+          test -f styles.css
+          test -f service-worker.js
+          test -f manifest.webmanifest
+          test -f assets/pharmingo-snake.png
+      - name: Commit v119
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md MOBILE_SETUP.md _headers app.js styles.css index.html service-worker.js manifest.webmanifest package.json capacitor.config.json assets icons
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Deploy Pharmingo v119 Security & UX Hardening [skip ci]"
+            git push origin HEAD:main
+          fi
